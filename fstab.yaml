@@ -3,3 +3,5 @@ mountpoints:
 
 folders:
   /products/: /products/default
+  /drafts/multistore/en/products/: /drafts/multistore/en/products/default
+  /drafts/multistore/en_ca/products/: /drafts/multistore/en_ca/products/default
