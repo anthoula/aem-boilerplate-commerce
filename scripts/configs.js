@@ -43,19 +43,34 @@ function buildConfigURL(environment) {
 }
 
 function applyMetadataOverridesToConfig(config) {
-  const storeview = getMetadata('storeview');
-  const currency = getMetadata('currency');
+  const website = getMetadata('commerce-website');
+  const store = getMetadata('commerce-store');
+  const storeview = getMetadata('commerce-storeview');
+  // const currency = getMetadata('commerce-currency');
 
   const updates = new Map();
 
-  if (storeview) {
-    updates.set('commerce.headers.all.Store', storeview);
-    updates.set('commerce.headers.cs.Magento-Store-View-Code', storeview);
+  if (website) {
+    // Catalog Services
+    updates.set('commerce.headers.cs.Magento-Website-Code', website);
   }
 
-  if (currency) {
-    updates.set('commerce.headers.all.Content-Currency', currency);
+  if (store) {
+    // Catalog Services
+    updates.set('commerce.headers.cs.Magento-Store-Code', store);
   }
+
+  if (storeview) {
+    // Catalog Services
+    updates.set('commerce.headers.cs.Magento-Store-View-Code', storeview);
+    // Commerce PaaS
+    updates.set('commerce.headers.all.Store', storeview);
+  }
+
+  // if (currency) {
+    // Commerce PaaS
+    // updates.set('commerce.headers.all.Content-Currency', 'CAD');
+  // }
 
   // apply updates
   config.data.forEach((item) => {
@@ -69,6 +84,8 @@ function applyMetadataOverridesToConfig(config) {
   updates.forEach((value, key) => {
     config.data.push({ key, value });
   });
+
+  console.log('🔴', config);
 
   return config;
 }
