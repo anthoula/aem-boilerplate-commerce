@@ -23,6 +23,7 @@ import {
 } from './aem.js';
 import { trackHistory } from './commerce.js';
 import initializeDropins from './initializers/index.js';
+import { removeHashTags } from './api/hashtags/parser.js';
 
 const AUDIENCES = {
   mobile: () => window.innerWidth < 600,
@@ -139,6 +140,21 @@ async function applyTemplates(doc) {
 }
 
 /**
+ * Notifies dropins about the current loading state.
+ * @param {string} state The loading state to notify
+ */
+function notifyUI(event) {
+  // skip if the event was already sent
+  if (events.lastPayload(`aem/${event}`) === event) return;
+  // notify dropins about the current loading state
+  const handleEmit = () => events.emit(`aem/${event}`);
+  // listen for prerender event
+  document.addEventListener('prerenderingchange', handleEmit, { once: true });
+  // emit the event immediately
+  handleEmit();
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
@@ -150,7 +166,22 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
-  // decorateLinks(main); // author can decide when to localize links
+}
+
+/**
+ * Decorates all links in scope of element
+ *
+ * @param {HTMLElement} element
+ */
+function decorateLinks(element) {
+  element.querySelectorAll('a').forEach((a) => {
+    if (!a.hash) {
+      return;
+    }
+    a.addEventListener('click', (evt) => {
+      removeHashTags(evt.target);
+    });
+  });
 }
 
 function preloadFile(href, as) {
@@ -256,7 +287,8 @@ async function loadEager(doc) {
     document.body.classList.add('appear');
   }
 
-  events.emit('eds/lcp', true);
+  // notify that the page is ready for eager loading
+  notifyUI('lcp');
 
   try {
     /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
@@ -306,6 +338,8 @@ async function loadLazy(doc) {
   }
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
+
+  decorateLinks(doc);
 }
 
 /**
@@ -363,31 +397,6 @@ export async function fetchIndex(indexFile, pageSize = 500) {
 export function getRootPath() {
   window.ROOT_PATH = window.ROOT_PATH || getMetadata('root') || '/';
   return window.ROOT_PATH;
-}
-
-/**
- * Decorates links.
- * @param {Element} main The main element
- */
-export function decorateLinks(main) {
-  const root = getRootPath();
-  if (root === '/') return;
-  const links = main.querySelectorAll('a');
-
-  links.forEach((link) => {
-    const url = new URL(link.href, window.location.origin);
-    const { pathname } = url;
-
-    // If the link is already localized, do nothing
-    if (pathname.startsWith('//') || pathname.startsWith(root)) return;
-
-    if (
-      link.href.startsWith('/')
-      || link.href.startsWith(window.location.origin)
-    ) {
-      link.href = `${root}${url.pathname.substring(1)}${url.search}${url.hash}`;
-    }
-  });
 }
 
 /**
