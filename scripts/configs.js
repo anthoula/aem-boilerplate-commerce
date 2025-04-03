@@ -46,7 +46,6 @@ function applyMetadataOverridesToConfig(config) {
   const website = getMetadata('commerce-website');
   const store = getMetadata('commerce-store');
   const storeview = getMetadata('commerce-storeview');
-  // const currency = getMetadata('commerce-currency');
 
   const updates = new Map();
 
@@ -67,11 +66,6 @@ function applyMetadataOverridesToConfig(config) {
     updates.set('commerce.headers.all.Store', storeview);
   }
 
-  // if (currency) {
-    // Commerce PaaS
-    // updates.set('commerce.headers.all.Content-Currency', 'CAD');
-  // }
-
   // apply updates
   config.data.forEach((item) => {
     if (updates.has(item.key)) {
@@ -84,8 +78,6 @@ function applyMetadataOverridesToConfig(config) {
   updates.forEach((value, key) => {
     config.data.push({ key, value });
   });
-
-  console.log('🔴', config);
 
   return config;
 }
