@@ -32,13 +32,13 @@ export const calcEnvironment = () => {
   return environment;
 };
 
-function buildConfigURL(environment, root = '/') {
+function buildConfigURL(environment) {
   const env = environment || calcEnvironment();
   let fileName = 'configs.json';
   if (env !== 'prod') {
     fileName = `configs-${env}.json`;
   }
-  const configURL = new URL(`${window.location.origin}${root}${fileName}`);
+  const configURL = new URL(`${window.location.origin}/${fileName}`);
   return configURL;
 }
 
@@ -75,10 +75,9 @@ function applyMetadataOverridesToConfig(config) {
 
 const getConfigForEnvironment = async (environment) => {
   const env = environment || calcEnvironment();
-  const root = getRootPath() || '/';
 
   try {
-    const configJSON = window.sessionStorage.getItem(`config:${env}:${root}`);
+    const configJSON = window.sessionStorage.getItem(`config:${env}`);
     if (!configJSON) {
       throw new Error('No config in session storage');
     }
@@ -90,7 +89,7 @@ const getConfigForEnvironment = async (environment) => {
 
     return applyMetadataOverridesToConfig(parsedConfig);
   } catch (e) {
-    let configJSON = await fetch(buildConfigURL(env, root));
+    let configJSON = await fetch(buildConfigURL(env));
     if (!configJSON.ok) {
       throw new Error(`Failed to fetch config for ${env}`);
     }
