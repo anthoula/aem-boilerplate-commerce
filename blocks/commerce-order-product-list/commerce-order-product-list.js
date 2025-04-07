@@ -9,6 +9,7 @@ import { render as CartProvider } from '@dropins/storefront-cart/render.js';
 import '../../scripts/initializers/order.js';
 import { rootLink } from '../../scripts/scripts.js';
 
+
 export default async function decorate(block) {
   await orderRenderer.render(OrderProductList, {
     slots: {
